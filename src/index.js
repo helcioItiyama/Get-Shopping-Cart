@@ -1,21 +1,20 @@
 const promotions = ['SINGLE LOOK', 'DOUBLE LOOK', 'TRIPLE LOOK', 'FULL LOOK'];
 
 function getShoppingCart(ids, productsList) {
-	const categoryList = [];
-
 	const cartList = productsList.filter(product => ids.includes(product.id));
 	
-	const products = cartList.map(product => ({name: product.name, category: product.category}))
+	const products = cartList.map(product => ({name: product.name, category: product.category}));
 	
 	const price = cartList.reduce((total, amount) => {
-		return total + amount.regularPrice
+		return total + amount.regularPrice;
 	}, 0);
 
-	cartList.forEach(product => {
-		if(!categoryList.includes(product.category)) {
-			categoryList.push(product.category)
-		}
-	});
+	const categoryList = cartList.reduce((total, product) => {
+		if(!total.includes(product.category)) {
+			total.push(product.category);
+		};
+		return total;
+	}, []);
 	
 	const promotion = promotions[categoryList.length -1];
 
