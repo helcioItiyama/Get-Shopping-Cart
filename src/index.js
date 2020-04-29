@@ -1,52 +1,41 @@
 const promotions = ['SINGLE LOOK', 'DOUBLE LOOK', 'TRIPLE LOOK', 'FULL LOOK'];
 
 function getShoppingCart(ids, productsList) {
-	const products = [],
-	categoryList = [],
-	promoPrice = [];
-	let price = 0,
-	discountPrice = 0,
-	normalPrice = 0;
+	const categoryList = [];
 
-	productsList.forEach(product=> {
-		for(let id of ids) {
-			if(id === product.id) {
-				products.push({ name: product.name, category: product.category});
-				price += product.regularPrice;
-				
-				if(!categoryList.includes(product.category)) {
-					categoryList.push(product.category)
-				};
-				
-				let promoValue = {
-					promotions: product.promotions,
-					regularPrice: product.regularPrice
-				};
+	const cartList = productsList.filter(product => ids.includes(product.id));
+	
+	const products = cartList.map(product => ({name: product.name, category: product.category}))
+	
+	const price = cartList.reduce((total, amount) => {
+		return total + amount.regularPrice
+	}, 0);
 
-				promoPrice.push(promoValue);
-			}
+	cartList.forEach(product => {
+		if(!categoryList.includes(product.category)) {
+			categoryList.push(product.category)
 		}
 	});
 	
 	const promotion = promotions[categoryList.length -1];
 
-	for (promo of promoPrice) {
-		for(discount of promo.promotions) {
-			if(discount.looks.includes(promotion)) {
-				discountPrice += discount.price;
-				normalPrice += promo.regularPrice;
-			}
+	const totalDiscount = cartList.reduce((total, product) => {
+		const discount = product.promotions.find(promo => promo.looks.includes(promotion));
+		if(discount) {
+			return total + discount.price;
+		} else {
+			return total + product.regularPrice;
 		}
-	}
+	}, 0);
 
-	let totalDiscount = normalPrice - discountPrice;
+	const discountValue = price - totalDiscount;
 
 	return {
 		products,
 		promotion,
-		totalPrice: (price - totalDiscount).toFixed(2),
-		discountValue: totalDiscount.toFixed(2),
-		discount: `${(totalDiscount * 100/ price).toFixed(2)}%`,
+		totalPrice: totalDiscount.toFixed(2),
+		discountValue: discountValue.toFixed(2),
+		discount: `${(discountValue * 100/ price).toFixed(2)}%`
 	}
 }
 
